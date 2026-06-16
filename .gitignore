@@ -1,0 +1,73 @@
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# Maven wrapper / release leftovers
+dependency-reduced-pom.xml
+release.properties
+
+# Spring Boot / runtime output
+logs/
+*.log
+*.pid
+
+# Local database files
+data/
+*.db
+*.mv.db
+*.trace.db
+*.lock.db
+
+# Frontend dependencies and build output
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.cache/
+frontend/.eslintcache
+
+# Generated static frontend assets copied by Maven profiles
+src/main/resources/static/
+
+# IDEs and editors
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Local env and secrets
+.env
+.env.*
+!.env.example
+application-local.properties
+application-*.local.properties
+
+# Local certificates / keystores generated during development
+*.pfx
+*.jks
+*.keystore
+*.key
+pki/
+security/

@@ -1,0 +1,23 @@
+XYZL IOT Client Certificate Information
+=====================================
+
+Application URI: urn:eclipse:milo:xyzl-iot
+Product URI: urn:eclipse:milo:xyzl-iot
+Application Name: XYZL Trust IOT Client
+Subject: C=CN, ST=XYZL State, L=XYZL City, OU=IOT Development, O=XYZL Organization, CN=XYZL Trust IOT Client
+Issuer: C=CN, ST=XYZL State, L=XYZL City, OU=IOT Development, O=XYZL Organization, CN=XYZL Trust IOT Client
+Serial Number: 1749970141136
+Valid From: Sun Jun 15 00:00:00 CST 2025
+Valid To: Thu Jun 15 00:00:00 CST 2028
+Key Size: 2048 bits
+Signature Algorithm: SHA256withRSA
+
+Files Generated:
+- Certificate (DER): xyzl-iot-client-1749970141136.der
+- KeyStore (PKCS12): xyzl-iot-client.p12
+- KeyStore Password: password
+
+Usage Instructions:
+1. Import the DER certificate into Prosys OPC UA Server
+2. Set the certificate status to 'Trusted' in Prosys
+3. Use the PKCS12 keystore in your OPC UA client application

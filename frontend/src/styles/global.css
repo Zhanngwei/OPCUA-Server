@@ -1,0 +1,104 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-bottom: 1px solid #e4e7ed;
+  background: #f5f7fa;
+}
+
+.toolbar-button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dcdfe6;
+  background: white;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.toolbar-button:hover {
+  background: #ecf5ff;
+  border-color: #409eff;
+}
+
+.toolbar-button.active {
+  background: #409eff;
+  color: white;
+  border-color: #409eff;
+}
+
+.tree-container {
+  height: 100%;
+  overflow: auto;
+  border-right: 1px solid #e4e7ed;
+}
+
+.property-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.property-tabs {
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.property-content {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+
+.node-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.folder-icon {
+  color: #f39c12;
+}
+
+.variable-icon {
+  color: #3498db;
+}
+
+.object-icon {
+  color: #9b59b6;
+}
+
+.custom-tree-node {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  padding-right: 8px;
+}
+
+.property-table {
+  width: 100%;
+}
+
+.property-table .el-table__cell {
+  padding: 8px 0;
+}
+
+.search-input {
+  margin: 8px;
+  width: calc(100% - 16px);
+}

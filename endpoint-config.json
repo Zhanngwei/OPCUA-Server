@@ -1,0 +1,39 @@
+{
+  "tcpEndpoint" : {
+    "enabled" : true,
+    "port" : 4840,
+    "serverName" : "milo",
+    "securityModes" : {
+      "none" : true,
+      "sign" : false,
+      "signAndEncrypt" : false
+    }
+  },
+  "httpsEndpoint" : {
+    "enabled" : false,
+    "port" : 8443,
+    "serverName" : "milo",
+    "securityModes" : {
+      "none" : true,
+      "sign" : false,
+      "signAndEncrypt" : false
+    },
+    "tlsPolicies" : {
+      "tls10" : false,
+      "tls11" : false,
+      "tls12" : true
+    }
+  },
+  "securityPolicies" : {
+    "basic128Rsa15" : false,
+    "basic256" : false,
+    "basic256Sha256" : false,
+    "aes128Sha256RsaOaep" : false,
+    "aes256Sha256RsaPss" : false
+  },
+  "bindAddressMode" : "all",
+  "customBindAddress" : "",
+  "enableIPv6" : false,
+  "registerToLDS" : false,
+  "ldsUrl" : "opc.tcp://localhost:4840"
+}

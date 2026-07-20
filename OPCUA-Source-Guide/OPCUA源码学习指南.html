@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>OPC UA 从入门到实战：OPCUA-Server 源码学习指南</title>
+  <style>
+    :root{--bg:#f5f7fb;--panel:#fff;--text:#18212f;--muted:#5d6878;--line:#dce3ed;--blue:#1769e0;--cyan:#087f8c;--green:#14804a;--orange:#ad5700;--red:#b42318;--code:#101827;--codeText:#d7e2f0;--shadow:0 8px 28px rgba(24,33,47,.08);--nav:290px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.78 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+    a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}code{font-family:Consolas,"Cascadia Code",monospace;font-size:.91em}p code,li code,td code{padding:.12em .38em;border-radius:5px;background:#edf2f8;color:#17436f;overflow-wrap:anywhere}
+    .top{margin-left:var(--nav);padding:55px max(28px,calc((100vw - var(--nav) - 1100px)/2));background:linear-gradient(135deg,#0c2e5e,#125d7a 70%,#0d7b70);color:#fff}.top h1{max-width:920px;margin:0 0 12px;font-size:clamp(2rem,4vw,3.4rem);line-height:1.15}.top p{max-width:850px;margin:8px 0;color:#d7edf4}.badges{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}.badge{border:1px solid #ffffff55;border-radius:999px;padding:4px 11px;background:#ffffff14;font-size:.86rem}
+    #menuBtn{display:none;position:fixed;z-index:20;top:12px;left:12px;border:0;border-radius:8px;background:#103b64;color:#fff;padding:9px 12px;box-shadow:var(--shadow)}
+    nav{position:fixed;z-index:10;inset:0 auto 0 0;width:var(--nav);overflow:auto;padding:22px 16px;background:#0f1f33;color:#dce9f7}nav .brand{font-weight:750;font-size:1.05rem;padding:0 10px 14px;border-bottom:1px solid #ffffff22}nav ol{list-style:none;padding:9px 0 35px;margin:0}nav a{display:block;color:#bcd0e5;border-left:3px solid transparent;padding:7px 10px;font-size:.89rem;line-height:1.3}nav a:hover,nav a.active{color:#fff;background:#ffffff10;border-left-color:#40c4d6;text-decoration:none}
+    main{margin-left:var(--nav);max-width:1100px;padding:42px 42px 90px}section{margin:0 0 58px;padding:30px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}h2{margin:0 0 24px;font-size:1.75rem;line-height:1.3}h3{margin:30px 0 10px;font-size:1.25rem}h4{margin:22px 0 8px}.lead{font-size:1.08rem;color:var(--muted)}
+    table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.93rem}th,td{padding:10px 12px;text-align:left;vertical-align:top;border:1px solid var(--line)}th{background:#eef4fb;color:#24405f}tbody tr:nth-child(even){background:#fafcff}.scroll{overflow:auto}
+    pre{position:relative;overflow:auto;margin:14px 0;padding:17px 19px;border-radius:10px;background:var(--code);color:var(--codeText);line-height:1.55}pre code{font-size:.88rem}.note,.tip,.warn,.danger{margin:17px 0;padding:13px 16px;border-left:5px solid;border-radius:8px;background:#f1f6fd}.note{border-color:var(--blue)}.tip{border-color:var(--green);background:#edf8f2}.warn{border-color:var(--orange);background:#fff6e8}.danger{border-color:var(--red);background:#fff0ef}.label{font-weight:720}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:13px}.card{padding:16px;border:1px solid var(--line);border-radius:10px;background:#fbfdff}.card h3,.card h4{margin-top:0}.diagram{margin:20px 0;padding:14px;border:1px solid var(--line);border-radius:12px;background:#f9fbfe;overflow:auto}.diagram svg{display:block;width:100%;min-width:680px;height:auto}.diagram figcaption{margin-top:10px;text-align:center;color:var(--muted);font-size:.9rem}.node{fill:#fff;stroke:#2f6fb1;stroke-width:2}.node2{fill:#e8f6f6;stroke:#087f8c;stroke-width:2}.store{fill:#fff4dd;stroke:#ad5700;stroke-width:2}.bad{fill:#fff0ef;stroke:#b42318;stroke-width:2}.svgt{font:14px system-ui,sans-serif;fill:#18212f;text-anchor:middle}.svgh{font:bold 15px system-ui,sans-serif;fill:#18212f;text-anchor:middle}.arrow{stroke:#56687c;stroke-width:2;fill:none;marker-end:url(#arrow)}
+    .path{font-family:Consolas,monospace;color:#30557c;overflow-wrap:anywhere}.check{list-style:none;padding-left:0}.check li{margin:7px 0}.check li:before{content:"□";margin-right:8px;color:var(--green);font-weight:bold}.pill{display:inline-block;margin:2px;padding:2px 8px;border-radius:999px;background:#e8f1ff;color:#174e92;font-size:.82rem}.back{position:fixed;right:18px;bottom:18px;width:42px;height:42px;border:0;border-radius:50%;background:#1769e0;color:#fff;box-shadow:var(--shadow);cursor:pointer;opacity:0;pointer-events:none;transition:.2s}.back.show{opacity:1;pointer-events:auto}footer{margin-left:var(--nav);padding:24px 42px 45px;color:var(--muted);text-align:center}
+    @media(max-width:900px){:root{--nav:0px}#menuBtn{display:block}nav{width:280px;transform:translateX(-102%);transition:.25s;box-shadow:var(--shadow)}nav.open{transform:none}.top{margin-left:0;padding:72px 22px 36px}main{margin-left:0;padding:22px 12px 70px}section{padding:22px 18px;border-radius:10px}footer{margin-left:0;padding:20px}.diagram{margin-left:-8px;margin-right:-8px}}
+    @media(prefers-color-scheme:dark){:root{--bg:#0d1420;--panel:#141f2e;--text:#e6edf5;--muted:#a8b4c3;--line:#2c3a4c;--code:#080d14;--shadow:none}p code,li code,td code{background:#203247;color:#a9d3ff}th{background:#213044;color:#dceafa}tbody tr:nth-child(even){background:#172434}.card,.diagram{background:#172434}.note{background:#172b43}.tip{background:#143325}.warn{background:#382a13}.danger{background:#3b1d20}.svgt,.svgh{fill:#18212f}}
+  </style>
+</head>
+<body>
+<button id="menuBtn" aria-label="打开或关闭目录">☰ 目录</button>
+<nav id="toc" aria-label="文档目录">
+  <div class="brand">OPC UA × 源码指南</div>
+  <ol>
+    <li><a href="#overview">1. 全局认识</a></li><li><a href="#why">2. OPC UA 解决什么</a></li>
+    <li><a href="#model">3. 信息模型</a></li><li><a href="#communication">4. 通信模型</a></li>
+    <li><a href="#security">5. 安全模型</a></li><li><a href="#architecture">6. 项目架构</a></li>
+    <li><a href="#startup">7. 启动链路</a></li><li><a href="#nodes">8. 动态节点</a></li>
+    <li><a href="#webflow">9. Web/REST/Milo/H2</a></li><li><a href="#lab-uaexpert">10. UaExpert 实战</a></li>
+    <li><a href="#lab-web">11. Web UI 实战</a></li><li><a href="#lab-rest">12. REST 实战</a></li>
+    <li><a href="#lab-persistence">13. 持久化与证书</a></li><li><a href="#extend">14. 二次开发</a></li>
+    <li><a href="#capabilities">15. 功能与边界</a></li><li><a href="#production">16. 风险与生产化</a></li>
+    <li><a href="#troubleshooting">17. 故障排查</a></li><li><a href="#source-map">18. 源码路线与术语</a></li>
+  </ol>
+</nav>
+
+<header class="top" id="top">
+  <h1>OPC UA 从入门到实战</h1>
+  <p>站在 OPCUA-Server 源码解释者的角度，把 NodeId、Endpoint、SecureChannel、Session、Subscription 等协议概念，逐一落到 Java、Milo、Spring Boot、Vue 和 H2 的具体实现。</p>
+  <div class="badges"><span class="badge">Java 17</span><span class="badge">Spring Boot 3.1.5</span><span class="badge">Eclipse Milo 1.0.0</span><span class="badge">Vue 3</span><span class="badge">离线单文件</span><span class="badge">基线 2026-07-20</span></div>
+</header>
+
+<main>
+<section id="overview">
+  <h2>1. 先用 10 分钟建立全局认识</h2>
+  <p class="lead">OPC UA 不只传一个数值，还描述这个数值是什么、属于谁、怎样访问、是否可信，以及客户端如何持续收到它的变化。</p>
+  <div class="grid">
+    <article class="card"><h3>工业数据面</h3><p>UaExpert、SCADA 或网关通过 <code>opc.tcp://localhost:4840/milo</code> 连接 Milo，浏览、读写和订阅地址空间。</p></article>
+    <article class="card"><h3>Web 管理面</h3><p>浏览器访问 <code>http://localhost:8166</code>，Vue 通过 REST API 管理节点、证书、用户、端点页面和状态。</p></article>
+    <article class="card"><h3>持久化面</h3><p>动态节点、用户、证书状态和认证开关存入 H2；Milo 的运行时证书/PKI 位于系统临时目录。</p></article>
+  </div>
+  <div class="note"><span class="label">核心结论：</span>Web API 不是 OPC UA 协议。它是项目额外提供的管理平面；OPC UA 报文编解码和服务分发由 Milo 完成。</div>
+  <h3>推荐路线</h3>
+  <ul><li><strong>30 分钟：</strong>读第 2～7、15 章。</li><li><strong>半天上手：</strong>完成第 10～13 章实验。</li><li><strong>准备二开：</strong>重点看第 8、9、14、16、18 章。</li></ul>
+</section>
+
+<section id="why">
+  <h2>2. OPC UA 到底解决什么问题</h2>
+  <p>OPC Classic 依赖 Windows COM/DCOM。OPC UA 重建了跨平台协议栈、信息模型和安全模型，能够用统一语义连接 PLC、网关、SCADA、MES、云边应用。它定义地址空间、服务、状态码和安全规则；Milo 实现 SDK；本项目负责配置 Milo、创建模型并增加 Web 管理与持久化。</p>
+  <div class="scroll"><table><thead><tr><th>层</th><th>解决的问题</th><th>本项目落点</th></tr></thead><tbody>
+    <tr><td>应用语义</td><td>Object、Variable、DataType、Reference</td><td><code>SimpleNamespace</code>、<code>DynamicNodeManager</code></td></tr>
+    <tr><td>服务</td><td>Browse、Read、Write、Call、Subscription</td><td>Milo 服务层 + 项目注册的 UaNode</td></tr>
+    <tr><td>会话与安全</td><td>Endpoint、SecureChannel、Session、User Token</td><td><code>SimpleOpcUaServer</code>、身份验证器</td></tr>
+    <tr><td>传输编码</td><td>UA TCP、UA Binary</td><td>Milo Stack，TCP 端口 4840</td></tr>
+  </tbody></table></div>
+  <div class="diagram"><svg viewBox="0 0 900 270" role="img" aria-label="OPC UA 四层模型图"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#56687c"/></marker></defs>
+    <rect class="node" x="60" y="25" width="780" height="45" rx="8"/><text class="svgh" x="450" y="53">应用语义：对象、变量、类型、引用</text>
+    <path class="arrow" d="M450 70 V92"/><rect class="node2" x="100" y="94" width="700" height="45" rx="8"/><text class="svgh" x="450" y="122">服务：Browse / Read / Write / Subscription</text>
+    <path class="arrow" d="M450 139 V161"/><rect class="store" x="140" y="163" width="620" height="45" rx="8"/><text class="svgh" x="450" y="191">Session / SecureChannel / UserIdentityToken</text>
+    <path class="arrow" d="M450 208 V230"/><rect class="node" x="200" y="232" width="500" height="32" rx="8"/><text class="svgt" x="450" y="253">UA TCP + UA Binary + TCP/IP</text>
+  </svg><figcaption>从信息语义到 TCP 传输：项目写上层扩展，Milo 承担大部分协议栈实现。</figcaption></div>
+</section>
+
+<section id="model">
+  <h2>3. 信息模型：把设备变成可浏览的知识图谱</h2>
+  <h3>Address Space 与 NodeClass</h3>
+  <p>地址空间是 Node 和 Reference 组成的有向图。客户端一般从 Root/Objects/Types 浏览。本项目在 Objects 下创建受保护的 <code>HelloWorld</code>，动态节点则来自 Web/API 和 H2。</p>
+  <pre><code>Objects
+├─ Server
+├─ HelloWorld
+│  ├─ Temperature   # 每秒变化
+│  ├─ Pressure
+│  └─ Humidity
+└─ 动态文件夹与变量</code></pre>
+  <div class="scroll"><table><thead><tr><th>NodeClass</th><th>用途</th><th>项目状态</th></tr></thead><tbody>
+    <tr><td>Object</td><td>设备或逻辑实体</td><td>使用标准对象/Folder 简化</td></tr><tr><td>Variable</td><td>可读写、可订阅数据</td><td>完整使用 UaVariableNode</td></tr>
+    <tr><td>Method</td><td>可调用操作</td><td>未见业务 Method 节点</td></tr><tr><td>ObjectType / VariableType</td><td>类型模板</td><td>使用标准类型，未建复杂自定义模型</td></tr>
+    <tr><td>ReferenceType / DataType</td><td>关系语义和值类型</td><td>使用标准 Organizes 与内置数据类型</td></tr>
+  </tbody></table></div>
+  <h3>NodeId ≠ BrowseName ≠ DisplayName</h3>
+  <div class="grid"><div class="card"><h4>NodeId</h4><p>地址空间内机器唯一标识，由 NamespaceIndex + Identifier 构成。</p></div><div class="card"><h4>BrowseName</h4><p>浏览时的 QualifiedName，包含命名空间。</p></div><div class="card"><h4>DisplayName</h4><p>给人看的 LocalizedText，不要求唯一。</p></div></div>
+  <pre><code>ns=2;s=Line1/Motor/Speed    # String
+ns=2;i=1001                 # Numeric
+ns=2;g=550e8400-e29b-41d4-a716-446655440000
+ns=2;b=AQIDBA==             # Opaque</code></pre>
+  <p>本项目支持 string、numeric、guid、opaque，数字 ID 从 1000 开始。业务 <code>path</code> 是项目映射约定，不是 OPC UA 标准路径语法。Namespace URI 为 <code>urn:example:simple-opcua-server</code>；稳健客户端应通过 NamespaceArray 解析 URI 到 index，而不是永久写死 <code>ns=2</code>。</p>
+  <h3>Attribute、DataValue 与 Reference</h3>
+  <p>Read 得到的常常是 <code>DataValue</code>：Variant 值、StatusCode、SourceTimestamp、ServerTimestamp。关系使用有类型的 Reference；本项目主要用 <code>Organizes</code>，但真实 OPC UA 模型是图，不只是树。</p>
+</section>
+
+<section id="communication">
+  <h2>4. 通信模型：从发现端点到订阅数据</h2>
+  <div class="diagram"><svg viewBox="0 0 930 330" role="img" aria-label="OPC UA 连接和订阅时序图"><defs><marker id="arrow2" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#56687c"/></marker></defs>
+    <text class="svgh" x="190" y="28">OPC UA Client</text><text class="svgh" x="740" y="28">Milo Server</text><path d="M190 40V310M740 40V310" stroke="#91a0b2" stroke-dasharray="5 5"/>
+    <g class="svgt"><path d="M200 65H725" stroke="#56687c" marker-end="url(#arrow2)"/><text x="465" y="58">GetEndpoints</text><path d="M730 94H205" stroke="#56687c" marker-end="url(#arrow2)"/><text x="465" y="87">Endpoint + SecurityPolicy</text>
+    <path d="M200 125H725" stroke="#56687c" marker-end="url(#arrow2)"/><text x="465" y="118">OpenSecureChannel</text><path d="M200 158H725" stroke="#56687c" marker-end="url(#arrow2)"/><text x="465" y="151">CreateSession / ActivateSession</text>
+    <path d="M200 191H725" stroke="#56687c" marker-end="url(#arrow2)"/><text x="465" y="184">Browse / Read / Write</text><path d="M200 224H725" stroke="#56687c" marker-end="url(#arrow2)"/><text x="465" y="217">CreateSubscription + MonitoredItem</text>
+    <path d="M730 257H205" stroke="#087f8c" stroke-width="3" marker-end="url(#arrow2)"/><text x="465" y="250">PublishResponse(DataChange)</text><path d="M200 290H725" stroke="#56687c" marker-end="url(#arrow2)"/><text x="465" y="283">CloseSession</text></g>
+  </svg><figcaption>Endpoint 是连接方案，SecureChannel 保护消息，Session 绑定用户，Subscription 属于 Session。</figcaption></div>
+  <h3>Browse、Read、Write</h3><p>Browse 返回引用，不等于递归读整棵树；Read/Write 可以批量操作 Attribute，每个结果都有 StatusCode。Milo 实现服务，本项目把 UaNode 注册进 NodeManager。</p>
+  <h3>Subscription 与 MonitoredItem</h3>
+  <pre><code>Session
+└─ Subscription (publishing interval / lifetime / keep-alive)
+   ├─ MonitoredItem: Temperature (sampling / queue / filter)
+   └─ MonitoredItem: Pressure</code></pre>
+  <p>SamplingInterval 是采样频率，PublishingInterval 是整理通知并发布的频率。客户端必须持续发 PublishRequest。项目在 <code>SimpleNamespace.java:32</code> 创建 <code>SubscriptionModel</code>，在 <code>:192-208</code> 委托监控项回调；HelloWorld 每秒更新，适合验证订阅。</p>
+</section>
+
+<section id="security">
+  <h2>5. 安全模型：证书、SecureChannel 与用户身份</h2>
+  <p>应用实例证书回答“哪个应用”，UserIdentityToken 回答“哪个用户”。证书失败常发生在 SecureChannel 阶段，用户名失败发生在 ActivateSession；排错不要混为一谈。</p>
+  <div class="scroll"><table><thead><tr><th>模式</th><th>含义</th><th>建议</th></tr></thead><tbody><tr><td>None</td><td>不签名、不加密</td><td>只用于受控实验</td></tr><tr><td>Sign</td><td>防篡改，内容可见</td><td>按威胁模型选择</td></tr><tr><td>SignAndEncrypt</td><td>签名并加密</td><td>通常为生产首选</td></tr></tbody></table></div>
+  <div class="diagram"><svg viewBox="0 0 960 230" role="img" aria-label="客户端证书首次连接到信任重连流程"><defs><marker id="arrow3" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#56687c"/></marker></defs>
+    <rect class="node" x="20" y="70" width="140" height="70" rx="10"/><text class="svgt" x="90" y="98"><tspan x="90">新客户端</tspan><tspan x="90" dy="20">携带证书</tspan></text>
+    <path class="arrow" d="M160 105H210"/><rect class="store" x="210" y="70" width="150" height="70" rx="10"/><text class="svgt" x="285" y="98"><tspan x="285">按 thumbprint</tspan><tspan x="285" dy="20">查询 H2</tspan></text>
+    <path class="arrow" d="M360 105H410"/><rect class="bad" x="410" y="70" width="160" height="70" rx="10"/><text class="svgt" x="490" y="98"><tspan x="490">不存在：保存 Rejected</tspan><tspan x="490" dy="20">拒绝本次连接</tspan></text>
+    <path class="arrow" d="M570 105H620"/><rect class="node2" x="620" y="70" width="150" height="70" rx="10"/><text class="svgt" x="695" y="98"><tspan x="695">Web UI</tspan><tspan x="695" dy="20">人工 Trust</tspan></text>
+    <path class="arrow" d="M770 105H820"/><rect class="node" x="820" y="70" width="120" height="70" rx="10"/><text class="svgt" x="880" y="98"><tspan x="880">客户端</tspan><tspan x="880" dy="20">重新连接</tspan></text>
+  </svg><figcaption>关键代码：SimpleOpcUaServer.java:118-175，CertificateService 记录证书业务状态。</figcaption></div>
+  <div class="warn"><span class="label">项目风险：</span>用户名令牌策略显式使用 <code>SecurityPolicy.None</code>。若同时选择 None/None Endpoint，密码存在泄露风险。旧的 Basic128Rsa15/Basic256 也不应作为新生产基线。</div>
+  <p>运行时 Milo PKI 位于系统临时目录 <code>opcua-server/security</code>，而证书业务服务扫描 <code>src/main/resources/trusted</code> 与 <code>rejected</code>。两套目录需要在生产化前统一。</p>
+</section>
+
+<section id="architecture">
+  <h2>6. 本项目总体架构</h2>
+  <div class="diagram"><svg viewBox="0 0 1000 520" role="img" aria-label="OPCUA-Server 项目总体架构图"><defs><marker id="arrow4" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#56687c"/></marker></defs>
+    <rect x="230" y="25" width="540" height="380" rx="18" fill="#eef5ff" stroke="#7ca5d4" stroke-width="2"/><text class="svgh" x="500" y="52">Spring Boot 单进程</text>
+    <rect class="node" x="20" y="95" width="160" height="65" rx="10"/><text class="svgt" x="100" y="120"><tspan x="100">UaExpert / SCADA</tspan><tspan x="100" dy="20">OPC UA Client</tspan></text>
+    <rect class="node" x="20" y="255" width="160" height="65" rx="10"/><text class="svgt" x="100" y="292">Browser</text>
+    <rect class="node2" x="275" y="80" width="180" height="65" rx="10"/><text class="svgt" x="365" y="105"><tspan x="365">SimpleOpcUaServer</tspan><tspan x="365" dy="20">Eclipse Milo</tspan></text>
+    <rect class="node2" x="545" y="80" width="180" height="65" rx="10"/><text class="svgt" x="635" y="105"><tspan x="635">SimpleNamespace</tspan><tspan x="635" dy="20">DynamicNodeManager</tspan></text>
+    <rect class="node" x="275" y="250" width="180" height="65" rx="10"/><text class="svgt" x="365" y="275"><tspan x="365">Vue 3 UI</tspan><tspan x="365" dy="20">HTTP :8166</tspan></text>
+    <rect class="node" x="545" y="250" width="180" height="65" rx="10"/><text class="svgt" x="635" y="275"><tspan x="635">Controllers</tspan><tspan x="635" dy="20">Services</tspan></text>
+    <rect class="store" x="820" y="80" width="150" height="65" rx="10"/><text class="svgt" x="895" y="105"><tspan x="895">Milo PKI</tspan><tspan x="895" dy="20">temp/security</tspan></text>
+    <rect class="store" x="820" y="250" width="150" height="65" rx="10"/><text class="svgt" x="895" y="275"><tspan x="895">H2 / Logs</tspan><tspan x="895" dy="20">cert dirs</tspan></text>
+    <path class="arrow" d="M180 127H275"/><text class="svgt" x="225" y="117">:4840</text><path class="arrow" d="M455 112H545"/><path class="arrow" d="M180 287H275"/><path class="arrow" d="M455 282H545"/><path class="arrow" d="M725 112H820"/><path class="arrow" d="M725 282H820"/><path class="arrow" d="M635 250V145"/>
+    <rect x="260" y="350" width="480" height="38" rx="8" fill="#fff" stroke="#7ca5d4"/><text class="svgt" x="500" y="374">Manager 负责启停；Controller 静态桥接 DynamicNodeManager</text>
+  </svg><figcaption>工业客户端和浏览器进入同一进程的不同控制面，最终共享动态地址空间。</figcaption></div>
+  <div class="scroll"><table><thead><tr><th>模块</th><th>职责</th><th>源码入口</th></tr></thead><tbody>
+    <tr><td>OpcUaServerApplication</td><td>启动 Spring、取 Manager、关机钩子</td><td class="path">OpcUaServerApplication.java:35</td></tr><tr><td>OpcUaServerManager</td><td>Milo 启停、依赖桥接和状态</td><td class="path">server/OpcUaServerManager.java:70</td></tr>
+    <tr><td>SimpleOpcUaServer</td><td>证书、Endpoint、安全、身份、Namespace</td><td class="path">SimpleOpcUaServer.java:76</td></tr><tr><td>SimpleNamespace</td><td>HelloWorld、模拟值、订阅回调</td><td class="path">SimpleNamespace.java:40</td></tr>
+    <tr><td>DynamicNodeManager</td><td>动态节点 CRUD、浏览、类型、恢复</td><td class="path">DynamicNodeManager.java:53</td></tr><tr><td>NodePersistenceService</td><td>JPA 保存、软删除和值自动保存</td><td class="path">service/NodePersistenceService.java:33</td></tr>
+  </tbody></table></div>
+</section>
+
+<section id="startup">
+  <h2>7. 启动链路与核心类</h2>
+  <div class="diagram"><svg viewBox="0 0 1000 350" role="img" aria-label="Spring Boot 和 Milo 启动时序图"><defs><marker id="arrow5" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#56687c"/></marker></defs>
+    <g class="svgh"><text x="100" y="25">Application</text><text x="300" y="25">Spring</text><text x="500" y="25">Manager</text><text x="700" y="25">Milo/Namespace</text><text x="900" y="25">H2</text></g>
+    <g stroke="#9ba9b8" stroke-dasharray="5 5"><path d="M100 38V330"/><path d="M300 38V330"/><path d="M500 38V330"/><path d="M700 38V330"/><path d="M900 38V330"/></g>
+    <g class="svgt"><path d="M110 65H290" stroke="#56687c" marker-end="url(#arrow5)"/><text x="200" y="58">run()</text><path d="M110 105H490" stroke="#56687c" marker-end="url(#arrow5)"/><text x="300" y="98">manager.init()</text>
+    <path d="M510 145H690" stroke="#56687c" marker-end="url(#arrow5)"/><text x="600" y="138">new Server + endpoints</text><path d="M690 185H510" stroke="#56687c" marker-end="url(#arrow5)"/><text x="600" y="178">Namespace ready</text>
+    <path d="M510 225H690" stroke="#56687c" marker-end="url(#arrow5)"/><text x="600" y="218">startup()</text><path d="M710 265H890" stroke="#56687c" marker-end="url(#arrow5)"/><text x="800" y="258">load folders then variables</text><path d="M890 305H710" stroke="#087f8c" stroke-width="3" marker-end="url(#arrow5)"/><text x="800" y="298">OpcNode entities</text></g>
+  </svg><figcaption>代码先建内置 HelloWorld，再注入持久化服务并恢复动态节点。</figcaption></div>
+  <ol><li><code>SpringApplication.run()</code> 启动容器。</li><li>Manager 构造 <code>SimpleOpcUaServer</code>。</li><li>Server 加载证书、构造端点和身份验证器，启动 Namespace。</li><li>Namespace 创建 HelloWorld 与三个 Double 变量，开始每秒更新。</li><li>Manager 给动态管理器注入持久化服务和 Controller 静态引用。</li><li>延迟任务从 H2 先恢复 Folder，再恢复 Variable。</li></ol>
+  <div class="warn">Controller 通过静态 setter 获得 DynamicNodeManager，而不是纯 Spring 构造注入。服务器重启后引用更新和并发访问应专门测试。</div>
+</section>
+
+<section id="nodes">
+  <h2>8. 地址空间与动态节点源码导读</h2>
+  <h3>内置 Namespace</h3><p><code>SimpleNamespace</code> 创建 HelloWorld/Temperature、Pressure、Humidity，设置 Double 初值，每秒加入随机扰动。它展示 UaFolderNode、UaVariableNodeBuilder、NodeId、DataType、TypeDefinition、Organizes 和 SubscriptionModel 的最小闭环。</p>
+  <h3>动态节点主干</h3>
+  <div class="scroll"><table><thead><tr><th>方法</th><th>行</th><th>职责</th></tr></thead><tbody><tr><td>loadPersistedNodes</td><td>53</td><td>从 H2 先恢复 Folder 后恢复 Variable</td></tr><tr><td>createFolder</td><td>153</td><td>NodeId、注册、持久化</td></tr><tr><td>createVariable</td><td>228</td><td>类型、访问级别、值转换、持久化</td></tr><tr><td>updateVariable</td><td>345</td><td>内存写值并自动保存</td></tr><tr><td>renameNode / deleteNode</td><td>425 / 491</td><td>更新地址空间与持久层</td></tr><tr><td>getNodeReferences</td><td>1136</td><td>整理入/出引用</td></tr></tbody></table></div>
+  <div class="diagram"><svg viewBox="0 0 980 260" role="img" aria-label="Web 创建动态变量和持久化数据流"><defs><marker id="arrow6" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#56687c"/></marker></defs>
+    <g><rect class="node" x="15" y="75" width="130" height="60" rx="8"/><text class="svgt" x="80" y="111">Vue Dialog</text><path class="arrow" d="M145 105H180"/><rect class="node" x="180" y="75" width="140" height="60" rx="8"/><text class="svgt" x="250" y="111">NodeController</text><path class="arrow" d="M320 105H355"/><rect class="node2" x="355" y="75" width="180" height="60" rx="8"/><text class="svgt" x="445" y="101"><tspan x="445">DynamicNodeManager</tspan><tspan x="445" dy="20">type/value/access</tspan></text>
+    <path class="arrow" d="M535 95H590"/><rect class="node2" x="590" y="35" width="160" height="60" rx="8"/><text class="svgt" x="670" y="71">UaVariableNode</text><path class="arrow" d="M750 65H835"/><rect class="node" x="835" y="35" width="130" height="60" rx="8"/><text class="svgt" x="900" y="61"><tspan x="900">OPC UA</tspan><tspan x="900" dy="20">Client</tspan></text>
+    <path class="arrow" d="M535 120H590"/><rect class="store" x="590" y="135" width="160" height="60" rx="8"/><text class="svgt" x="670" y="161"><tspan x="670">OpcNode / JPA</tspan><tspan x="670" dy="20">H2</tspan></text></g>
+  </svg><figcaption>一个 Web 建点请求同时改变 Milo 内存模型和 H2 项目节点描述。</figcaption></div>
+  <p>持久化不是序列化整个 Milo 地址空间。标准节点和 HelloWorld 每次由代码重建，动态节点由 <code>OpcNode</code> 描述恢复。<code>enabled=true</code> 的 Folder/Variable 才被查询。</p>
+</section>
+
+<section id="webflow">
+  <h2>9. Web、REST、Milo 与 H2 的数据流</h2>
+  <p>Vue 路由包含状态、对象、端点、证书、用户页面。Pinia Store 以 <code>/api</code> 为 baseURL，从 localStorage 取 <code>authToken</code> 加 Bearer 头。</p>
+  <div class="scroll"><table><thead><tr><th>方法</th><th>路径</th><th>用途</th></tr></thead><tbody>
+    <tr><td>POST</td><td><code>/api/auth/login</code></td><td>Web 登录，返回内存 UUID Token</td></tr><tr><td>GET</td><td><code>/api/nodes</code></td><td>节点树数据</td></tr><tr><td>POST</td><td><code>/api/nodes/folder</code></td><td>建 Folder</td></tr><tr><td>POST</td><td><code>/api/nodes/variable</code></td><td>建 Variable</td></tr><tr><td>PUT</td><td><code>/api/nodes/variable/{path}</code></td><td>改值</td></tr><tr><td>GET</td><td><code>/api/nodes/references</code></td><td>引用信息</td></tr><tr><td>POST</td><td><code>/api/nodes/batch</code></td><td>批量建点</td></tr><tr><td>POST</td><td><code>/api/certificates/{id}/trust</code></td><td>信任证书</td></tr><tr><td>GET</td><td><code>/public/health</code></td><td>无认证健康检查</td></tr>
+  </tbody></table></div>
+  <div class="note">Web Token 与 OPC UA Session 完全不同。Web Token 是内存 UUID；OPC UA 用户身份在 ActivateSession 中验证。服务器重启会令 Web Token 失效。</div>
+</section>
+
+<section id="lab-uaexpert">
+  <h2>10. 实战一：启动项目并用 UaExpert 订阅</h2>
+  <div class="warn">生成本指南的环境没有可用的 Maven 命令，因此以下步骤依据源码和配置编写，未在本次生成过程中实际启动验证。</div>
+  <h3>启动</h3><pre><code>cd D:\projectSelf\OPCUA-Server
+mvn spring-boot:run -Pskip-frontend</code></pre>
+  <p>预期入口：Web <code>http://localhost:8166</code>；OPC UA <code>opc.tcp://localhost:4840/milo</code>；Discovery <code>opc.tcp://localhost:4840/milo/discovery</code>。</p>
+  <h3>UaExpert</h3><ol><li>Add Server，输入 Discovery URL。</li><li>初学先用 None/None 验证连通性；安全实验选 Basic256Sha256/SignAndEncrypt。</li><li>展开 Objects → HelloWorld。</li><li>把三个变量拖进 Data Access View。</li><li>观察值每秒变化，再比较 NodeId、BrowseName、DisplayName、DataType、AccessLevel。</li></ol>
+  <p>源码闭环：节点创建 <code>SimpleNamespace.java:100-141</code>，每秒调度 <code>:144</code>，值更新 <code>:157-168</code>，订阅回调 <code>:192-208</code>。</p>
+</section>
+
+<section id="lab-web">
+  <h2>11. 实战二：用 Web UI 管理节点</h2>
+  <div class="scroll"><table><thead><tr><th>用户</th><th>默认密码</th><th>说明</th></tr></thead><tbody><tr><td>admin</td><td>admin123</td><td>示例管理员</td></tr><tr><td>operator</td><td>operator123</td><td>示例操作员</td></tr><tr><td>viewer</td><td>viewer123</td><td>示例查看者</td></tr><tr><td>guest</td><td>guest123</td><td>示例访客</td></tr></tbody></table></div>
+  <ol><li>在 Objects 下创建 Folder：<code>Factory</code>。</li><li>在其下创建 <code>LineSpeed</code>：Double、初值 12.5、READ_WRITE。</li><li>在 UaExpert 刷新并订阅该点。</li><li>Web 改值为 18.2，观察 UaExpert 通知。</li><li>正常重启，再确认节点和值恢复。</li></ol>
+  <div class="danger">默认账号只用于本地演示。当前 UserService 明文保存并比较密码，生产使用前必须改造。</div>
+</section>
+
+<section id="lab-rest">
+  <h2>12. 实战三：用 REST API 自动建点</h2>
+  <h3>登录</h3><pre><code>$login = Invoke-RestMethod -Method Post `
+  -Uri 'http://localhost:8166/api/auth/login' `
+  -ContentType 'application/json' `
+  -Body '{"username":"admin","password":"admin123"}'
+$headers = @{ Authorization = "Bearer $($login.token)" }</code></pre>
+  <h3>创建 Folder 与 Variable</h3><pre><code>$folder = @{path='Factory';displayName='工厂';nodeIdType='string';nodeIdValue='Factory'} | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri 'http://localhost:8166/api/nodes/folder' `
+  -Headers $headers -ContentType 'application/json' -Body $folder
+
+$variable = @{
+  path='Factory/LineSpeed';displayName='线速度';initialValue=12.5
+  dataType='Double';accessLevel='READ_WRITE';nodeIdType='string'
+  nodeIdValue='Factory.LineSpeed'
+} | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri 'http://localhost:8166/api/nodes/variable' `
+  -Headers $headers -ContentType 'application/json' -Body $variable</code></pre>
+  <h3>批量建点</h3><pre><code>$batch = @{
+  items=@(
+    @{name='Line1_Temperature';type='double'},
+    @{name='Line1_Running';type='boolean'},
+    @{name='Line2_Counter';type='int'}
+  )
+  options=@{autoCreateFolders=$true;folderSeparator='_';skipExisting=$true
+            defaultAccessLevel='READ_WRITE';validateNames=$true}
+} | ConvertTo-Json -Depth 5
+Invoke-RestMethod -Method Post -Uri 'http://localhost:8166/api/nodes/batch' `
+  -Headers $headers -ContentType 'application/json' -Body $batch</code></pre>
+  <div class="danger"><code>/public/batch-create-nodes</code> 和 <code>/api/nodes/batch-no-auth</code> 可匿名修改地址空间，不应暴露到生产网络。</div>
+</section>
+
+<section id="lab-persistence">
+  <h2>13. 实战四：验证持久化与证书信任</h2>
+  <h3>持久化</h3><ol><li>创建节点并写一个可识别值。</li><li>记录 NodeId、DataType、Value。</li><li>正常停止并重启。</li><li>等待恢复任务，刷新 Web 和 UaExpert。</li><li>检查 H2 相对路径和记录的 <code>enabled=true</code>。</li></ol>
+  <h3>证书信任</h3><ol><li>UaExpert 选择非 None Endpoint。</li><li>首次连接的新证书被保存为 Rejected 并拒绝。</li><li>Web 证书页按 thumbprint 确认证书并 Trust。</li><li>客户端重新连接。</li></ol>
+  <p>若 UI 显示 Trusted 仍失败，要同时检查 H2、系统临时目录 Milo PKI、证书 Application URI/DNS/IP 和日志，而不只检查资源目录。</p>
+</section>
+
+<section id="extend">
+  <h2>14. 二次开发：接入真实设备数据</h2>
+  <p>把协议采集和 OPC UA 建模分开：</p><pre><code>Device Adapter → Normalized Point Value → Mapping Service
+               → DynamicNodeManager → UaVariableNode</code></pre>
+  <p>适配器获得 Modbus/MQTT/PLC 值后，调用动态管理器更新既有变量；不要在 Milo 服务线程里阻塞采集。工业值还应携带 SourceTimestamp、ServerTimestamp 和 StatusCode，并建立单位、量程、质量和刷新频率语义。</p>
+  <h3>从点表升级到类型模型</h3><ol><li>定义 MotorType ObjectType。</li><li>声明 Speed、Temperature、Running 组件。</li><li>实例化 Motor01/Motor02。</li><li>使用 HasComponent、HasProperty 等语义引用。</li><li>优先对齐行业 Companion Specification。</li></ol>
+  <div class="scroll"><table><thead><tr><th>需求</th><th>首要位置</th><th>重点</th></tr></thead><tbody><tr><td>新增动态节点能力</td><td>DynamicNodeManager</td><td>同步 REST、持久化与恢复</td></tr><tr><td>固定业务模型</td><td>新 Namespace</td><td>保持模型边界清晰</td></tr><tr><td>端点/安全配置</td><td>SimpleOpcUaServer</td><td>当前 JSON 尚未接入实际构建</td></tr><tr><td>身份策略</td><td>DynamicIdentityValidator</td><td>TokenPolicy 声明与验证一致</td></tr></tbody></table></div>
+</section>
+
+<section id="capabilities">
+  <h2>15. 核心功能与能力边界</h2>
+  <h3>OPC UA 标准能力与项目能力矩阵</h3>
+  <div class="scroll"><table><thead><tr><th>能力</th><th>状态</th><th>说明</th></tr></thead><tbody>
+    <tr><td>UA TCP / Discovery</td><td><span class="pill">已实现</span></td><td>4840，/milo 与 /milo/discovery</td></tr><tr><td>Browse / Read / Write</td><td><span class="pill">已实现</span></td><td>Milo 服务 + UaNode</td></tr><tr><td>DataChange Subscription</td><td><span class="pill">已实现</span></td><td>SubscriptionModel 回调</td></tr><tr><td>动态节点 CRUD / H2 恢复</td><td><span class="pill">已实现</span></td><td>Web/API 与 DynamicNodeManager</td></tr><tr><td>多安全策略 Endpoint</td><td><span class="pill">代码创建</span></td><td>实际由 SimpleOpcUaServer 硬编码</td></tr><tr><td>Endpoint 配置 UI 真正生效</td><td>未完整接通</td><td>保存 JSON，apply 是模拟过程</td></tr><tr><td>活跃端点与连接测试</td><td>模拟数据</td><td>EndpointService 返回固定 12686 列表，只校验 URL 前缀</td></tr><tr><td>Method / Event / History / A&amp;C</td><td>未见完整业务实现</td><td>不能把 SDK/标准能力写成项目已实现</td></tr><tr><td>PubSub / LDS 注册 / 高可用</td><td>未实现</td><td>当前定位为单机 Client/Server</td></tr>
+  </tbody></table></div>
+  <div class="note">“未见完整业务实现”不等于 OPC UA 或 Milo 不支持，只表示当前仓库未构造成可用功能。</div>
+</section>
+
+<section id="production">
+  <h2>16. 源码观察、风险与生产化清单</h2>
+  <div class="danger"><span class="label">最重要的源码事实：</span><code>EndpointService.getActiveEndpoints()</code> 返回 12686 的模拟数据，<code>applyEndpointConfig()</code> 只 sleep；实际 Server 固定绑定 4840 并创建安全策略。运维应以 Milo 日志和 <code>SimpleOpcUaServer</code> 为准。</div>
+  <ul><li>trusted 目录扫描在 <code>CertificateService.java:220</code> 仍传入 Rejected 状态。</li><li>Milo PKI 与 Web 证书目录/H2 状态来源不统一。</li><li>用户密码明文；Web Token 是无过期的内存 UUID。</li><li>公开批量写接口、H2 Console 对外开放、数据库默认凭据写在配置中。</li><li>Controller 静态注入；旧安全策略和 None Endpoint 同时存在。</li></ul>
+  <h3>上线检查</h3><ul class="check"><li>删除示例账号，密码改强哈希并外部化密钥。</li><li>禁用 None 和遗留 SecurityPolicy。</li><li>统一证书 PKI、H2 状态、信任/吊销/更新流程。</li><li>移除匿名写接口，增加节点级授权、审计和限流。</li><li>关闭/隔离 H2 Console，建立数据库备份和迁移。</li><li>让 endpoint-config 真正驱动 Endpoint Builder，或删除误导入口。</li><li>做断线重连、慢客户端、订阅恢复、高频更新和大量节点压测。</li><li>至少使用两个不同 SDK 客户端做互操作测试。</li></ul>
+</section>
+
+<section id="troubleshooting">
+  <h2>17. 常见问题排查</h2>
+  <h3>端口与 Endpoint</h3><pre><code>Get-NetTCPConnection -LocalPort 4840,8166 -ErrorAction SilentlyContinue</code></pre><p>Web 端口由 properties 控制；OPC UA 端口当前来自 <code>SimpleOpcUaServer.TCP_BIND_PORT</code>。仅改 endpoint-config.json 不会影响真实端点。</p>
+  <h3>Bad_CertificateInvalid</h3><p>首次安全连接先在证书页信任；检查有效期、Application URI、主机名、H2 Trusted/deleted 状态和 Milo 临时 PKI。</p>
+  <h3>Web 改值但客户端看不到</h3><p>确认同一进程和 NodeId，刷新 UaExpert 地址空间缓存，核对 REST success 和 DataType 转换。</p>
+  <h3>重启后节点丢失</h3><p>相对 H2 路径受工作目录影响；检查 persistence/auto-save、enabled=true、saveNode 日志和父 Folder 恢复顺序。</p>
+  <h3>订阅不变化</h3><p>HelloWorld 每秒更新；动态静态值只有被写时才变化。检查 MonitoringMode、SamplingInterval、PublishingInterval、QueueSize 和客户端 PublishRequest。</p>
+</section>
+
+<section id="source-map">
+  <h2>18. 源码阅读路线与术语速查</h2>
+  <h3>阅读顺序</h3><ol><li>pom.xml、application.properties：依赖和默认环境。</li><li>OpcUaServerApplication：双服务入口。</li><li>OpcUaServerManager：生命周期和桥接。</li><li>SimpleOpcUaServer：Endpoint、证书、安全和身份。</li><li>SimpleNamespace：地址空间与 Subscription。</li><li>DynamicNodeManager：动态节点主干。</li><li>NodePersistenceService/OpcNode：恢复模型。</li><li>NodeController + Vue Store：Web 管理流。</li><li>DynamicIdentityValidator/CertificateService：安全扩展。</li><li>EndpointService：识别尚未接通的模拟部分。</li></ol>
+  <h3>完整路径索引</h3><div class="scroll"><table><thead><tr><th>主题</th><th>源码路径与起始行</th></tr></thead><tbody>
+    <tr><td>入口</td><td class="path">src/main/java/org/go/show/multiproto/opcuaserver/OpcUaServerApplication.java:35</td></tr><tr><td>生命周期</td><td class="path">src/main/java/org/go/show/multiproto/opcuaserver/server/OpcUaServerManager.java:70</td></tr><tr><td>Endpoint/安全</td><td class="path">src/main/java/org/go/show/multiproto/opcuaserver/SimpleOpcUaServer.java:226</td></tr><tr><td>Namespace/订阅</td><td class="path">src/main/java/org/go/show/multiproto/opcuaserver/SimpleNamespace.java:28</td></tr><tr><td>动态节点</td><td class="path">src/main/java/org/go/show/multiproto/opcuaserver/DynamicNodeManager.java:53</td></tr><tr><td>持久化</td><td class="path">src/main/java/org/go/show/multiproto/opcuaserver/service/NodePersistenceService.java:33</td></tr><tr><td>身份</td><td class="path">src/main/java/org/go/show/multiproto/opcuaserver/identity/DynamicIdentityValidator.java:45</td></tr><tr><td>证书</td><td class="path">src/main/java/org/go/show/multiproto/opcuaserver/service/CertificateService.java:43</td></tr><tr><td>端点模拟逻辑</td><td class="path">src/main/java/org/go/show/multiproto/opcuaserver/service/EndpointService.java:35</td></tr><tr><td>前端 Store</td><td class="path">frontend/src/stores/opcua.js:5</td></tr>
+  </tbody></table></div>
+  <h3>术语</h3><div class="grid"><div class="card"><strong>Address Space</strong><br>节点与引用图</div><div class="card"><strong>NodeId</strong><br>地址空间内唯一标识</div><div class="card"><strong>DataValue</strong><br>值、质量与时间戳</div><div class="card"><strong>Endpoint</strong><br>URL 与安全方案</div><div class="card"><strong>SecureChannel</strong><br>应用间受保护通道</div><div class="card"><strong>Session</strong><br>绑定用户的服务上下文</div><div class="card"><strong>Subscription</strong><br>通知发布对象</div><div class="card"><strong>MonitoredItem</strong><br>采样、过滤和排队项</div></div>
+  <div class="tip"><span class="label">最后记住两条链路：</span><br>UaExpert → Milo → SimpleNamespace/UaVariableNode → Publish；<br>Vue → REST → DynamicNodeManager → UaVariableNode + H2 → UaExpert 可见。</div>
+</section>
+</main>
+
+<footer>本指南解释 2026-07-20 工作区源码，不替代 OPC Foundation 官方规范。源码变化后请重新核对行号、配置与能力边界。</footer>
+<button class="back" id="back" aria-label="返回顶部">↑</button>
+<script>
+(() => {
+  const nav = document.getElementById('toc');
+  const menu = document.getElementById('menuBtn');
+  const back = document.getElementById('back');
+  const links = [...nav.querySelectorAll('a[href^="#"]')];
+  const sections = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  menu.addEventListener('click', () => nav.classList.toggle('open'));
+  links.forEach(a => a.addEventListener('click', () => nav.classList.remove('open')));
+  back.addEventListener('click', () => window.scrollTo({top:0,behavior:'smooth'}));
+  const update = () => {
+    back.classList.toggle('show', window.scrollY > 500);
+    let current = sections[0];
+    for (const section of sections) if (section.getBoundingClientRect().top <= 100) current = section;
+    links.forEach(a => a.classList.toggle('active', current && a.getAttribute('href') === '#' + current.id));
+  };
+  addEventListener('scroll', update, {passive:true}); update();
+})();
+</script>
+</body>
+</html>
